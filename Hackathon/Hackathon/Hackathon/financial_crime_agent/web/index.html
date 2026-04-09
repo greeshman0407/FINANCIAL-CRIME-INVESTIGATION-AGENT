@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinGuard — Financial Crime Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #060d1a;
+      --surface:   #0c1829;
+      --surface2:  #0f2035;
+      --border:    #1a3050;
+      --accent:    #3b82f6;
+      --accent2:   #06b6d4;
+      --text:      #e2eaf4;
+      --muted:     #6b8aaa;
+      --low:       #22c55e;
+      --medium:    #f59e0b;
+      --high:      #ef4444;
+      --critical:  #a855f7;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(90deg, #060d1a 0%, #0c1829 50%, #060d1a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .brand-name { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+    .brand-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .header-badge {
+      padding: 4px 12px; border-radius: 20px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+      font-size: 11px; color: var(--accent); font-weight: 500;
+    }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-header .ph-icon { font-size: 16px; }
+    .panel-header h2 { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
+    .panel-body { padding: 20px; }
+
+    /* ── Presets ── */
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+    .preset {
+      padding: 4px 11px; border-radius: 6px; font-size: 11px; font-weight: 500;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .preset:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.08); }
+
+    /* ── Form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .full { grid-column: 1 / -1; }
+    .field label { display: block; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+    input, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); padding: 8px 11px;
+      font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    select option { background: #0c1829; }
+
+    .toggle-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .toggle-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+    .toggle-row label { font-size: 13px; color: var(--text); cursor: pointer; margin: 0; text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+    .btn-run {
+      width: 100%; margin-top: 16px; padding: 12px;
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      border: none; border-radius: 9px; color: #fff;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; letter-spacing: 0.3px;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+    }
+    .btn-run:hover  { opacity: 0.92; box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+    .btn-run:active { transform: scale(0.98); }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    /* ── Loading ── */
+    .loader { display: none; align-items: center; justify-content: center; gap: 10px; padding: 12px; color: var(--muted); font-size: 13px; }
+    .loader-ring { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+    /* ── Empty state ── */
+    .empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 320px; gap: 12px; color: var(--muted);
+    }
+    .empty-icon { font-size: 52px; opacity: 0.4; }
+    .empty-text { font-size: 14px; }
+
+    /* ── Results ── */
+    #results { display: none; }
+
+    /* ── Verdict bar ── */
+    .verdict-bar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 18px 20px; margin-bottom: 16px;
+      background: var(--surface2); border-radius: 12px;
+      border: 1px solid var(--border);
+      animation: fadeUp 0.4s ease;
+    }
+    .score-ring { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+    .score-ring svg { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: var(--border); stroke-width: 8; }
+    .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke 0.5s; }
+    .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ring-score { font-size: 20px; font-weight: 700; line-height: 1; }
+    .ring-sub   { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    .verdict-info { flex: 1; }
+    .verdict-info .v-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .badge {
+      padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge-LOW      { background: rgba(34,197,94,0.12);  color: var(--low);      border: 1px solid rgba(34,197,94,0.3); }
+    .badge-MEDIUM   { background: rgba(245,158,11,0.12); color: var(--medium);   border: 1px solid rgba(245,158,11,0.3); }
+    .badge-HIGH     { background: rgba(239,68,68,0.12);  color: var(--high);     border: 1px solid rgba(239,68,68,0.3); }
+    .badge-CRITICAL { background: rgba(168,85,247,0.12); color: var(--critical); border: 1px solid rgba(168,85,247,0.3); }
+
+    .action-badge { padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+    .action-PASS      { background: rgba(34,197,94,0.1);  color: var(--low); }
+    .action-MONITOR   { background: rgba(245,158,11,0.1); color: var(--medium); }
+    .action-ESCALATE  { background: rgba(239,68,68,0.1);  color: var(--high); }
+    .action-BLOCK     { background: rgba(168,85,247,0.1); color: var(--critical); }
+
+    .v-meta { font-size: 11px; color: var(--muted); }
+    .v-meta span { margin-right: 14px; }
+    .v-caseid { font-size: 10px; color: #2a4a6a; font-family: monospace; margin-top: 4px; }
+
+    /* ── Section title ── */
+    .sec-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 18px 0 10px; display: flex; align-items: center; gap: 6px; }
+    .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Signals ── */
+    .signals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+    .sig-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+      padding: 12px; animation: fadeUp 0.35s ease forwards; opacity: 0;
+    }
+    .sig-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent2); margin-bottom: 4px; }
+    .sig-desc { font-size: 12px; color: #8aa4be; line-height: 1.45; }
+    .sig-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .sig-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.8s ease; }
+
+    /* ── Enrichment ── */
+    .enrich-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--surface2);
+      font-size: 13px; animation: fadeUp 0.35s ease forwards; opacity: 0;
+    }
+    .enrich-item:last-child { border-bottom: none; }
+    .enrich-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+
+    /* ── Explanation ── */
+    .explanation-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+      padding: 14px 16px; font-size: 12.5px; line-height: 1.75; color: #9ab4cc;
+      white-space: pre-wrap; font-family: 'Inter', monospace;
+    }
+
+    /* ── Audit ── */
+    .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .audit-table tr { border-bottom: 1px solid var(--surface2); animation: fadeUp 0.3s ease forwards; opacity: 0; }
+    .audit-table tr:last-child { border-bottom: none; }
+    .audit-table td { padding: 7px 4px; vertical-align: top; }
+    .audit-table .td-time  { color: #2a4a6a; font-family: monospace; white-space: nowrap; padding-right: 12px; }
+    .audit-table .td-agent { color: var(--accent); font-weight: 600; white-space: nowrap; padding-right: 12px; }
+    .audit-table .td-msg   { color: #7a9ab8; }
+
+    /* ── Animations ── */
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes fadeUp  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+
+    /* ── Print / PDF ── */
+    @media print {
+      body { background: #fff !important; color: #111 !important; font-size: 12px; }
+      .pdf-only { display: block !important; }
+      .no-print { display: none !important; }
+      .pdf-wrap { padding: 24px; max-width: 900px; margin: 0 auto; }
+      .pdf-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a5f; padding-bottom: 12px; margin-bottom: 20px; }
+      .pdf-title { font-size: 20px; font-weight: 700; color: #1e3a5f; }
+      .pdf-sub { font-size: 11px; color: #666; margin-top: 2px; }
+      .pdf-stamp { font-size: 11px; color: #888; text-align: right; }
+      .pdf-section { margin-bottom: 18px; }
+      .pdf-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #1e3a5f; border-bottom: 1px solid #dde; padding-bottom: 4px; margin-bottom: 10px; }
+      .pdf-kv { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; font-size: 12px; }
+      .pdf-kv .k { color: #555; font-weight: 600; }
+      .pdf-kv .v { color: #111; }
+      .pdf-signal { background: #f5f7fa; border-left: 3px solid #1e3a5f; padding: 6px 10px; margin-bottom: 6px; border-radius: 3px; font-size: 11px; }
+      .pdf-signal .st { font-weight: 700; text-transform: uppercase; color: #1e3a5f; }
+      .pdf-signal .sd { color: #444; margin-top: 2px; }
+      .pdf-signal .sv { color: #888; font-size: 10px; margin-top: 2px; }
+      .pdf-explanation { background: #f9fafb; border: 1px solid #dde; border-radius: 4px; padding: 12px; font-size: 11.5px; line-height: 1.8; color: #333; white-space: pre-wrap; }
+      .pdf-audit td { padding: 4px 8px; border-bottom: 1px solid #eee; font-size: 11px; vertical-align: top; }
+      .pdf-audit td:first-child { color: #888; white-space: nowrap; }
+      .pdf-audit td:nth-child(2) { color: #1e3a5f; font-weight: 600; white-space: nowrap; }
+      .pdf-audit td:nth-child(3) { color: #444; }
+      .pdf-verdict { display: flex; gap: 20px; align-items: center; background: #f0f4ff; border: 1px solid #c7d7f5; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; }
+      .pdf-score-big { font-size: 36px; font-weight: 800; color: #1e3a5f; line-height: 1; }
+      .pdf-score-label { font-size: 10px; color: #888; text-transform: uppercase; }
+      .pdf-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+      .pdf-badge { padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; border: 1px solid #ccc; }
+      .pdf-footer { margin-top: 30px; border-top: 1px solid #dde; padding-top: 10px; font-size: 10px; color: #aaa; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🛡️</div>
+    <div>
+      <div class="brand-name">FinGuard</div>
+      <div class="brand-sub">Financial Crime Intelligence Platform</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="header-badge">Multi-Agent AML · Fraud Detection</div>
+    <span style="font-size:12px;color:#6b8aaa;">👤 {{ user }}</span>
+    <a href="/logout" style="font-size:12px;color:#ef4444;text-decoration:none;padding:4px 12px;border:1px solid rgba(239,68,68,0.3);border-radius:6px;background:rgba(239,68,68,0.08);">Logout</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT: Input -->
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="ph-icon">📋</span>
+        <h2>Transaction Input</h2>
+      </div>
+      <div class="panel-body">
+
+        <div class="presets">
+          <span style="font-size:10px;color:#2a4a6a;align-self:center;margin-right:2px;">Quick load:</span>
+          <button class="preset" onclick="loadPreset('structuring')">Structuring</button>
+          <button class="preset" onclick="loadPreset('pep')">PEP + High Risk</button>
+          <button class="preset" onclick="loadPreset('clean')">Clean Txn</button>
+          <button class="preset" onclick="loadPreset('sanctions')">Sanctions Hit</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Account ID</label>
+            <input id="account_id" value="ACC_001" />
+          </div>
+          <div class="field">
+            <label>Amount (₹ INR)</label>
+            <input id="amount" type="number" value="50000" />
+          </div>
+          <div class="field">
+            <label>Transaction Country</label>
+            <input id="country" value="IN" maxlength="2" style="text-transform:uppercase" />
+          </div>
+          <div class="field">
+            <label>Residence Country</label>
+            <input id="residence_country" value="IN" maxlength="2" style="text-transform:uppercase" />
+          </div>
+          <div class="field">
+            <label>Merchant Category</label>
+            <select id="merchant_category">
+              <option>retail</option>
+              <option>upi_transfer</option>
+              <option>neft_rtgs</option>
+              <option>crypto</option>
+              <option>gambling</option>
+              <option>grocery</option>
+              <option>travel</option>
+              <option>atm</option>
+              <option>real_estate</option>
+              <option>gold_jewellery</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Channel</label>
+            <select id="channel">
+              <option>upi</option>
+              <option>neft</option>
+              <option>imps</option>
+              <option>rtgs</option>
+              <option>online</option>
+              <option>atm</option>
+              <option>branch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Counterparty UPI / Account</label>
+            <input id="counterparty_id" placeholder="e.g. 9876543210@upi" />
+          </div>
+          <div class="field">
+            <label>KYC Status</label>
+            <select id="kyc_status">
+              <option value="verified">Verified (Full KYC)</option>
+              <option value="pending">Pending (Min KYC)</option>
+              <option value="failed">Failed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Account Age (days)</label>
+            <input id="account_age_days" type="number" value="500" />
+          </div>
+          <div class="field">
+            <label>Avg Monthly Txn (₹)</label>
+            <input id="avg_monthly_txn_amount" type="number" value="30000" />
+          </div>
+          <div class="field">
+            <label>Customer Name</label>
+            <input id="name" value="Rajesh Kumar" />
+          </div>
+          <div class="field">
+            <label>Occupation</label>
+            <select id="occupation">
+              <option>software_engineer</option>
+              <option>government_official</option>
+              <option>business_owner</option>
+              <option>politician</option>
+              <option>doctor</option>
+              <option>trader</option>
+              <option>student</option>
+              <option>unknown</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="toggle-row">
+              <input type="checkbox" id="pep_flag" />
+              <label for="pep_flag">Politically Exposed Person (PEP)</label>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-run" id="btn" onclick="runInvestigation()">🔍 Run Investigation</button>
+        <div class="loader" id="loader">
+          <div class="loader-ring"></div>
+          Analyzing transaction…
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Results -->
+  <div>
+    <div class="panel" style="min-height:500px;">
+      <div class="panel-header">
+        <span class="ph-icon">📊</span>
+        <h2>Investigation Results</h2>
+      </div>
+      <div class="panel-body">
+
+        <div class="empty" id="empty">
+          <div class="empty-icon">🔎</div>
+          <div class="empty-text">Submit a transaction to begin investigation</div>
+        </div>
+
+        <div id="results">
+
+          <!-- Verdict -->
+          <div class="verdict-bar">
+            <div class="score-ring">
+              <svg width="90" height="90" viewBox="0 0 90 90">
+                <circle class="ring-bg"   cx="45" cy="45" r="37"/>
+                <circle class="ring-fill" cx="45" cy="45" r="37" id="ring-arc"
+                  stroke-dasharray="232" stroke-dashoffset="232"/>
+              </svg>
+              <div class="ring-label">
+                <span class="ring-score" id="ring-score">0.00</span>
+                <span class="ring-sub">Risk</span>
+              </div>
+            </div>
+            <div class="verdict-info">
+              <div class="v-row">
+                <span class="badge" id="risk-badge">--</span>
+                <span class="action-badge" id="action-badge">--</span>
+              </div>
+              <div class="v-meta">
+                <span id="conf-text"></span>
+                <span id="signals-count"></span>
+              </div>
+              <div class="v-caseid" id="case-id"></div>
+            </div>
+          </div>
+
+          <!-- Signals -->
+          <div class="sec-title">⚡ Detected Signals</div>
+          <div class="signals-grid" id="signals-grid"></div>
+
+          <!-- Enrichment -->
+          <div class="sec-title">🌐 Contextual Intelligence</div>
+          <div id="enrichment-list"></div>
+
+          <!-- Explanation -->
+          <div class="sec-title">🤖 AI Explanation</div>
+          <div class="explanation-box" id="explanation-box"></div>
+
+          <!-- Audit -->
+          <div class="sec-title">📜 Audit Trail</div>
+          <table class="audit-table"><tbody id="audit-body"></tbody></table>
+
+          <!-- Download -->
+          <div style="margin-top:20px;display:flex;gap:10px;">
+            <button onclick="downloadPDF()" style="flex:1;padding:11px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,0.3);transition:opacity 0.15s;" onmouseover="this.style.opacity=0.88" onmouseout="this.style.opacity=1">⬇️ Download PDF Report</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const PRESETS = {
+    structuring: { account_id:"ACC_SUSPECT_007", amount:490000, country:"AE", residence_country:"IN", merchant_category:"neft_rtgs",     channel:"neft",   counterparty_id:"ACC_SHELL_001", kyc_status:"verified", account_age_days:180,  avg_monthly_txn_amount:40000,  name:"Suresh Patel",   occupation:"business_owner",     pep_flag:false },
+    pep:         { account_id:"ACC_PEP_002",     amount:2500000, country:"AE", residence_country:"IN", merchant_category:"real_estate",   channel:"rtgs",   counterparty_id:"",             kyc_status:"verified", account_age_days:90,   avg_monthly_txn_amount:50000,  name:"Vijay Sharma",  occupation:"politician",         pep_flag:true  },
+    clean:       { account_id:"ACC_NORMAL_001",  amount:4500,  country:"IN", residence_country:"IN", merchant_category:"grocery",       channel:"upi",    counterparty_id:"",             kyc_status:"verified", account_age_days:1200, avg_monthly_txn_amount:30000,  name:"Priya Nair",   occupation:"software_engineer", pep_flag:false },
+    sanctions:   { account_id:"ACC_EVIL_001",    amount:800000, country:"PK", residence_country:"IN", merchant_category:"upi_transfer",  channel:"imps",   counterparty_id:"ACC_TERROR_002", kyc_status:"pending", account_age_days:30, avg_monthly_txn_amount:10000,  name:"Dawood Ibrahim", occupation:"unknown",           pep_flag:false }
+  };
+
+  function loadPreset(name) {
+    const p = PRESETS[name];
+    Object.keys(p).forEach(k => {
+      const el = document.getElementById(k);
+      if (!el) return;
+      el.type === "checkbox" ? (el.checked = p[k]) : (el.value = p[k]);
+    });
+  }
+
+  const COLORS = { LOW:"#22c55e", MEDIUM:"#f59e0b", HIGH:"#ef4444", CRITICAL:"#a855f7" };
+
+  function setRing(score, level) {
+    const c = 232, offset = c - score * c;
+    const arc = document.getElementById("ring-arc");
+    arc.style.strokeDashoffset = offset;
+    arc.style.stroke = COLORS[level] || "#3b82f6";
+    const el = document.getElementById("ring-score");
+    el.textContent = score.toFixed(2);
+    el.style.color = COLORS[level] || "#3b82f6";
+  }
+
+  function renderSignals(signals) {
+    const grid = document.getElementById("signals-grid");
+    if (!signals.length) {
+      grid.innerHTML = '<div style="color:#2a4a6a;font-size:13px;padding:8px 0;">No signals detected.</div>';
+      return;
+    }
+    grid.innerHTML = signals.map((s, i) => `
+      <div class="sig-card" style="animation-delay:${i*0.06}s">
+        <div class="sig-type">${s.type.replace(/_/g," ")}</div>
+        <div class="sig-desc">${s.description}</div>
+        <div class="sig-bar-wrap"><div class="sig-bar" style="width:${Math.round(s.severity*100)}%"></div></div>
+      </div>`).join("");
+  }
+
+  function renderEnrichment(report) {
+    const items = [];
+    const exp = report.explanation || "";
+    if (exp.includes("SANCTIONS HIT")) items.push({ color:"#a855f7", text:"Sanctions hit detected on account or counterparty." });
+    if (exp.includes("HIGH VELOCITY")) { const m = exp.match(/HIGH VELOCITY: (.+?)\./); items.push({ color:"#ef4444", text: m ? m[1] : "High transaction velocity detected." }); }
+    const news = [...exp.matchAll(/ADVERSE NEWS: (.+)/g)];
+    news.forEach(m => items.push({ color:"#f59e0b", text:"Adverse news: " + m[1] }));
+    if (exp.includes("NETWORK RISK")) { const m = exp.match(/NETWORK RISK: (.+)/); items.push({ color:"#ef4444", text: m ? m[1] : "Network risk detected." }); }
+    if (!items.length) items.push({ color:"#22c55e", text:"No adverse enrichment data found." });
+    document.getElementById("enrichment-list").innerHTML = items.map((it, i) => `
+      <div class="enrich-item" style="animation-delay:${i*0.08}s">
+        <div class="enrich-dot" style="background:${it.color}"></div>
+        <div>${it.text}</div>
+      </div>`).join("");
+  }
+
+  function renderAudit(trail) {
+    document.getElementById("audit-body").innerHTML = trail.map((e, i) => `
+      <tr style="animation-delay:${i*0.03}s">
+        <td class="td-time">${e.timestamp.replace("T"," ").substring(0,19)}</td>
+        <td class="td-agent">${e.agent}</td>
+        <td class="td-msg">${e.message}</td>
+      </tr>`).join("");
+  }
+
+  async function runInvestigation() {
+    const btn = document.getElementById("btn");
+    const loader = document.getElementById("loader");
+    btn.disabled = true; btn.style.display = "none";
+    loader.style.display = "flex";
+
+    const payload = {
+      account_id:             document.getElementById("account_id").value,
+      amount:                 document.getElementById("amount").value,
+      country:                document.getElementById("country").value.toUpperCase(),
+      residence_country:      document.getElementById("residence_country").value.toUpperCase(),
+      merchant_category:      document.getElementById("merchant_category").value,
+      channel:                document.getElementById("channel").value,
+      counterparty_id:        document.getElementById("counterparty_id").value,
+      kyc_status:             document.getElementById("kyc_status").value,
+      account_age_days:       document.getElementById("account_age_days").value,
+      avg_monthly_txn_amount: document.getElementById("avg_monthly_txn_amount").value,
+      name:                   document.getElementById("name").value,
+      occupation:             document.getElementById("occupation").value,
+      pep_flag:               document.getElementById("pep_flag").checked,
+    };
+
+    try {
+      const res  = await fetch("/api/investigate", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+      const data = await res.json();
+
+      document.getElementById("empty").style.display = "none";
+      document.getElementById("results").style.display = "block";
+      _lastReport = data;
+
+      const level = data.risk_level, action = data.recommended_action;
+      setRing(data.fraud_risk_score, level);
+
+      const rb = document.getElementById("risk-badge");
+      rb.textContent = level; rb.className = `badge badge-${level}`;
+
+      const ab = document.getElementById("action-badge");
+      ab.textContent = action; ab.className = `action-badge action-${action}`;
+
+      document.getElementById("conf-text").textContent    = `Confidence: ${Math.round(data.confidence*100)}%`;
+      document.getElementById("signals-count").textContent = `Signals: ${data.signals.length}`;
+      document.getElementById("case-id").textContent      = `Case: ${data.case_id}`;
+
+      renderSignals(data.signals);
+      renderEnrichment(data);
+      document.getElementById("explanation-box").textContent = data.explanation;
+      renderAudit(data.audit_trail);
+
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.disabled = false; btn.style.display = "block";
+      loader.style.display = "none";
+    }
+  }
+
+  loadPreset("clean");
+
+  let _lastReport = null;
+
+  function downloadPDF() {
+    if (!_lastReport) return;
+    const r = _lastReport;
+    const COLORS = { LOW:'#16a34a', MEDIUM:'#d97706', HIGH:'#dc2626', CRITICAL:'#9333ea' };
+    const color = COLORS[r.risk_level] || '#1e3a5f';
+    const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+    const signalsHtml = r.signals.length ? r.signals.map(s => `
+      <div class="pdf-signal">
+        <div class="st">${s.type.replace(/_/g,' ')}</div>
+        <div class="sd">${s.description}</div>
+        <div class="sv">Severity: ${Math.round(s.severity * 100)}%</div>
+      </div>`).join('') : '<p style="color:#888;font-size:12px;">No signals detected.</p>';
+
+    const auditHtml = r.audit_trail.map(e => `
+      <tr>
+        <td>${e.timestamp.replace('T',' ').substring(0,19)}</td>
+        <td>${e.agent}</td>
+        <td>${e.message}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+      <title>FinGuard Report — ${r.case_id}</title>
+      <style>
+        body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:32px;max-width:900px;margin:0 auto;font-size:12px;}
+        .pdf-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #1e3a5f;padding-bottom:12px;margin-bottom:20px;}
+        .pdf-title{font-size:22px;font-weight:700;color:#1e3a5f;}
+        .pdf-sub{font-size:11px;color:#666;margin-top:3px;}
+        .pdf-stamp{font-size:11px;color:#888;text-align:right;line-height:1.6;}
+        .pdf-verdict{display:flex;gap:20px;align-items:center;background:#f0f4ff;border:1px solid #c7d7f5;border-radius:8px;padding:14px 18px;margin-bottom:20px;}
+        .pdf-score-big{font-size:42px;font-weight:800;color:${color};line-height:1;}
+        .pdf-score-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
+        .pdf-badge{display:inline-block;padding:3px 12px;border-radius:4px;font-size:12px;font-weight:700;border:1px solid ${color};color:${color};background:${color}18;margin-right:6px;margin-top:6px;}
+        .sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#1e3a5f;border-bottom:1px solid #dde;padding-bottom:4px;margin:18px 0 10px;}
+        .kv{display:grid;grid-template-columns:180px 1fr;gap:5px 12px;margin-bottom:4px;}
+        .kv .k{color:#555;font-weight:600;}
+        .kv .v{color:#111;}
+        .pdf-signal{background:#f5f7fa;border-left:3px solid #1e3a5f;padding:7px 10px;margin-bottom:7px;border-radius:3px;}
+        .pdf-signal .st{font-weight:700;text-transform:uppercase;color:#1e3a5f;font-size:11px;}
+        .pdf-signal .sd{color:#444;margin-top:2px;}
+        .pdf-signal .sv{color:#888;font-size:10px;margin-top:2px;}
+        .pdf-explanation{background:#f9fafb;border:1px solid #dde;border-radius:4px;padding:12px;font-size:11.5px;line-height:1.8;color:#333;white-space:pre-wrap;}
+        table{width:100%;border-collapse:collapse;font-size:11px;}
+        td{padding:5px 8px;border-bottom:1px solid #eee;vertical-align:top;}
+        td:first-child{color:#888;white-space:nowrap;}
+        td:nth-child(2){color:#1e3a5f;font-weight:600;white-space:nowrap;}
+        td:nth-child(3){color:#444;}
+        .footer{margin-top:30px;border-top:1px solid #dde;padding-top:10px;font-size:10px;color:#aaa;text-align:center;}
+        .conf-bar-wrap{height:8px;background:#e5e7eb;border-radius:4px;margin-top:6px;width:200px;}
+        .conf-bar{height:100%;border-radius:4px;background:${color};}
+      </style></head><body>
+      <div class="pdf-header">
+        <div><div class="pdf-title">🛡️ FinGuard — Investigation Report</div>
+          <div class="pdf-sub">Financial Crime Intelligence Platform · AML / Fraud Detection</div></div>
+        <div class="pdf-stamp">Generated: ${now} IST<br/>Case ID: ${r.case_id}<br/>Transaction: ${r.transaction_id}</div>
+      </div>
+
+      <div class="pdf-verdict">
+        <div><div class="pdf-score-big">${r.fraud_risk_score.toFixed(2)}</div>
+          <div class="pdf-score-label">Risk Score</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:${Math.round(r.fraud_risk_score*100)}%"></div></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:4px;">Verdict Summary</div>
+          <span class="pdf-badge">${r.risk_level} RISK</span>
+          <span class="pdf-badge">ACTION: ${r.recommended_action}</span>
+          <div style="margin-top:8px;font-size:11px;color:#555;">Confidence: ${Math.round(r.confidence*100)}% &nbsp;|&nbsp; Signals Detected: ${r.signals.length}</div>
+        </div>
+      </div>
+
+      <div class="sec-title">Transaction Details</div>
+      <div class="kv"><span class="k">Account ID</span><span class="v">${r.account_id}</span></div>
+      <div class="kv"><span class="k">Transaction ID</span><span class="v">${r.transaction_id}</span></div>
+      <div class="kv"><span class="k">Amount</span><span class="v">₹${Number(document.getElementById('amount').value).toLocaleString('en-IN')}</span></div>
+      <div class="kv"><span class="k">Channel</span><span class="v">${document.getElementById('channel').value.toUpperCase()}</span></div>
+      <div class="kv"><span class="k">Merchant Category</span><span class="v">${document.getElementById('merchant_category').value}</span></div>
+      <div class="kv"><span class="k">Transaction Country</span><span class="v">${document.getElementById('country').value.toUpperCase()}</span></div>
+      <div class="kv"><span class="k">Counterparty</span><span class="v">${document.getElementById('counterparty_id').value || 'N/A'}</span></div>
+
+      <div class="sec-title">Customer Profile</div>
+      <div class="kv"><span class="k">Name</span><span class="v">${document.getElementById('name').value}</span></div>
+      <div class="kv"><span class="k">Residence Country</span><span class="v">${document.getElementById('residence_country').value.toUpperCase()}</span></div>
+      <div class="kv"><span class="k">KYC Status</span><span class="v">${document.getElementById('kyc_status').value}</span></div>
+      <div class="kv"><span class="k">Account Age</span><span class="v">${document.getElementById('account_age_days').value} days</span></div>
+      <div class="kv"><span class="k">Avg Monthly Txn</span><span class="v">₹${Number(document.getElementById('avg_monthly_txn_amount').value).toLocaleString('en-IN')}</span></div>
+      <div class="kv"><span class="k">Occupation</span><span class="v">${document.getElementById('occupation').value}</span></div>
+      <div class="kv"><span class="k">PEP Flag</span><span class="v">${document.getElementById('pep_flag').checked ? 'YES ⚠️' : 'No'}</span></div>
+
+      <div class="sec-title">Detected Signals (${r.signals.length})</div>
+      ${signalsHtml}
+
+      <div class="sec-title">AI Explanation</div>
+      <div class="pdf-explanation">${r.explanation}</div>
+
+      <div class="sec-title">Audit Trail</div>
+      <table><tbody>${auditHtml}</tbody></table>
+
+      <div class="footer">FinGuard Financial Crime Intelligence Platform &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; For Authorized Personnel Only &nbsp;·&nbsp; ${now} IST</div>
+    </body></html>`;
+
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 600);
+  }
+</script>
+</body>
+</html>
